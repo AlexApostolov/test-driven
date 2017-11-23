@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const PostSchema = require('./postSchema');
 const Schema = mongoose.Schema;
 
 const UserSchema = new Schema({
@@ -12,7 +13,15 @@ const UserSchema = new Schema({
     },
     required: [true, 'Name is required.']
   },
-  postCount: Number
+  // Wire up subdocument association for array of posts
+  posts: [PostSchema],
+  likes: Number
+});
+/* Instead of "postCount: Number," defined in the UserSchema to be saved on the DB,
+figure out on the fly what the postCount should be by defining a virtual type/property as a separate declaration.
+NOTE: function keyword used to define ES6 getter/setter to have access to the current instance with "this". */
+UserSchema.virtual('postCount').get(function() {
+  return this.posts.length;
 });
 
 // Create a collection & pass it the name "User", then pass it the schema from above
