@@ -16,8 +16,13 @@ before(done => {
 
 // Add a hook to the collection of users sitting inside the DB & delete them
 beforeEach(done => {
-  mongoose.connection.collections.users.drop(() => {
-    // Ready to run the next test!
-    done();
+  // The variable names have to be all lowercase because Mongoose normalizes each collection name
+  const { users, comments, blogposts } = mongoose.connection.collections;
+  users.drop(() => {
+    comments.drop(() => {
+      blogposts.drop(() => {
+        done();
+      });
+    });
   });
 });
