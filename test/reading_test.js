@@ -5,13 +5,19 @@ describe('Reading users out of the database', () => {
   /* Since the test_helper.js is repeatedly dropping the collection of users
   we need to create a "joe" instance before this test. We also want the variable to be available
   to the inner scope of the "it" block, so we declare "joe" ahead of time. */
-  let joe;
+  let joe, maria, alex, zach;
 
   beforeEach(done => {
     /* mongoose creates an id for "joe" automatically, before joe is even saved.
     We can use that id to make sure we have the correct joe. */
     joe = new User({ name: 'Joe' });
-    joe.save().then(() => done());
+    alex = new User({ name: 'Alex' });
+    maria = new User({ name: 'Maria' });
+    zach = new User({ name: 'Zach' });
+
+    Promise.all([alex.save(), joe.save(), maria.save(), zach.save()]).then(() =>
+      done()
+    );
   });
 
   it('should find all users with a name of joe', done => {
@@ -29,5 +35,20 @@ describe('Reading users out of the database', () => {
       assert(user.name === 'Joe');
       done();
     });
+  });
+
+  it('should skip & limit the result set', done => {
+    /* Two query modifiers can be used to implement pagination: skip, & limit.
+    Here we only want to return the 2nd & 3rd user, so we skip the 1st user & limit to only 2 results. */
+    User.find({})
+      .sort({ name: 1 }) // Key is the property sorted, & value is the sort order--1 is ascending and -1 descending
+      .skip(1)
+      .limit(2)
+      .then(users => {
+        assert(users.length === 2);
+        assert(users[0].name === 'Joe');
+        assert(users[1].name === 'Maria');
+        done();
+      });
   });
 });
